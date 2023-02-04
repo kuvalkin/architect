@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: architect-service
+spec:
+  selector:
+    app: architect-app
+  ports:
+    - protocol: TCP
+      port: 9000
+      targetPort: web
+  type: NodePort

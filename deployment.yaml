@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: architect-deployment
+spec:
+    replicas: 2
+    selector:
+       matchLabels:
+          app: architect-app
+    template:
+       metadata:
+          labels:
+             app: architect-app
+       spec:
+          containers:
+          - name: architect-app
+            image: architect:v1
+            ports:
+              - name: web
+                containerPort: 8000
+            livenessProbe:
+                httpGet:
+                  port: 8000
+                  path: /health
+                initialDelaySeconds: 3
+                periodSeconds: 5
+                timeoutSeconds: 2
+            readinessProbe:
+                httpGet:
+                  port: 8000
+                  path: /health
+                initialDelaySeconds: 3
+                periodSeconds: 5
