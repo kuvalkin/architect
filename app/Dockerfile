@@ -18,4 +18,6 @@ WORKDIR /app
 
 COPY --from=builder /app/executable .
 
+EXPOSE 8000
+
 CMD ["./executable"]
