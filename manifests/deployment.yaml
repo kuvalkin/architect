@@ -14,7 +14,13 @@ spec:
        spec:
           containers:
           - name: architect-app
-            image: architect:v1
+            image: architect:v2
+            env:
+              - name: DB_DSN
+                valueFrom:
+                  secretKeyRef:
+                    name: architect-secret
+                    key: DB_DSN
             ports:
               - name: web
                 containerPort: 8000

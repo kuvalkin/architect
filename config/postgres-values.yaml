@@ -1,0 +1,11 @@
+auth:
+  enablePostgresUser: false
+  postgresPassword: ""
+  username: supername
+  password: hi-its-pasword
+  database: architect
+
+primary:
+  persistence:
+    enabled: true
+    size: 1Gi

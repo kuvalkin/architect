@@ -5,11 +5,13 @@ import (
 
 	"errors"
 
+	"os"
+
 	"github.com/gin-gonic/gin"
 
 	"gorm.io/gorm"
 
-	"gorm.io/driver/sqlite"
+	"gorm.io/driver/postgres"
 )
 
 type UserModel struct {
@@ -97,13 +99,13 @@ func main() {
 			c.JSON(http.StatusBadRequest, gin.H{"code": 5, "message": err.Error()})
 			return
 		}
-		
+
 		result = db.Model(&user).Updates(&UserModel{
-			Username: payload.Username,
+			Username:  payload.Username,
 			FirstName: payload.FirstName,
-			LastName: payload.LastName,
-			Email: payload.Email,
-			Phone: payload.Phone,
+			LastName:  payload.LastName,
+			Email:     payload.Email,
+			Phone:     payload.Phone,
 		})
 		if result.Error == nil {
 			c.JSON(http.StatusOK, user)
@@ -126,7 +128,7 @@ func main() {
 }
 
 func initDb() *gorm.DB {
-	db, err := gorm.Open(sqlite.Open("test.db"), &gorm.Config{})
+	db, err := gorm.Open(postgres.Open(os.Getenv("DB_DSN")), &gorm.Config{})
 	if err != nil {
 		panic("failed to connect database")
 	}

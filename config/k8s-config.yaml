@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: architect-secret
+type: Opaque
+data:
+  DB_DSN: aG9zdD1wb3N0Z3Jlcy1wb3N0Z3Jlc3FsIHVzZXI9c3VwZXJuYW1lIHBhc3N3b3JkPWhpLWl0cy1wYXN3b3JkIGRibmFtZT1hcmNoaXRlY3QK
