@@ -78,6 +78,50 @@ func main() {
 		}
 	})
 
+	r.PUT("/user/:userId", func(c *gin.Context) {
+		var user UserModel
+		result := db.First(&user, c.Param("userId"))
+
+		if result.Error != nil {
+			if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+				c.JSON(http.StatusNotFound, gin.H{"code": 3, "message": "Not found"})
+			} else {
+				c.JSON(http.StatusInternalServerError, gin.H{"code": 4, "message": result.Error.Error()})
+			}
+
+			return
+		}
+
+		var payload UserInput
+		if err := c.ShouldBindJSON(&payload); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"code": 5, "message": err.Error()})
+			return
+		}
+		
+		result = db.Model(&user).Updates(&UserModel{
+			Username: payload.Username,
+			FirstName: payload.FirstName,
+			LastName: payload.LastName,
+			Email: payload.Email,
+			Phone: payload.Phone,
+		})
+		if result.Error == nil {
+			c.JSON(http.StatusOK, user)
+		} else {
+			c.JSON(http.StatusBadRequest, gin.H{"code": 6, "message": result.Error.Error()})
+		}
+	})
+
+	r.DELETE("/user/:userId", func(c *gin.Context) {
+		result := db.Delete(&UserModel{}, c.Param("userId"))
+
+		if result.Error == nil {
+			c.Status(http.StatusNoContent)
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"code": 7, "message": result.Error.Error()})
+		}
+	})
+
 	r.Run(":8000")
 }
 
