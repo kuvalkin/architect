@@ -2,6 +2,8 @@ package main
 
 import (
 	"net/http"
+	"strconv"
+	"time"
 
 	"errors"
 
@@ -12,6 +14,12 @@ import (
 	"gorm.io/gorm"
 
 	"gorm.io/driver/postgres"
+
+	"github.com/prometheus/client_golang/prometheus"
+
+	"github.com/prometheus/client_golang/prometheus/promauto"
+
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 type UserModel struct {
@@ -31,9 +39,48 @@ type UserInput struct {
 	Phone     string `json:"phone" binding:"required"` //todo validation
 }
 
+var METRICS_REQUEST_LATENCY = promauto.NewHistogramVec(
+	prometheus.HistogramOpts{
+		Name: "app_request_latency_seconds",
+		Help: "Application Request Latency",
+	},
+	[]string{"method", "endpoint"},
+)
+
+var METRICS_REQUEST_COUNT = promauto.NewCounterVec(
+	prometheus.CounterOpts{
+		Name: "app_request_count",
+		Help: "Application Request Count",
+	},
+	[]string{"method", "endpoint", "http_status"},
+)
+
 func main() {
 	r := gin.Default()
 	db := initDb()
+
+	// define middleware before all routes, otherwise it will hurt you :)
+	r.Use(func(c *gin.Context) {
+
+		if c.Request.URL.Path == "/metrics" {
+			c.Next()
+			return
+		}
+
+		start := time.Now()
+
+		c.Next()
+
+		ellapsed := float64(time.Since(start)) / float64(time.Second)
+
+		METRICS_REQUEST_LATENCY.WithLabelValues(c.Request.Method, c.Request.URL.Path).Observe(ellapsed)
+		METRICS_REQUEST_COUNT.WithLabelValues(c.Request.Method, c.Request.URL.Path, strconv.Itoa(c.Writer.Status()))
+	})
+
+	promHandler := promhttp.Handler()
+	r.GET("/metrics", func(c *gin.Context) {
+		promHandler.ServeHTTP(c.Writer, c.Request)
+	})
 
 	r.GET("/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{

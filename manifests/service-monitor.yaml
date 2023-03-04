@@ -1,0 +1,17 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: architect-service-monitor
+  labels:
+    app: architect
+spec:
+  namespaceSelector:
+    matchNames:
+      - "architect"
+  selector:
+    matchLabels:
+      app: "architect-app"
+  endpoints:
+  - interval: 15s
+    port: web
+    path: /metrics
